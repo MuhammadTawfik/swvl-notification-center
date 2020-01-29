@@ -24,8 +24,8 @@ func (n Welcome) multiple_recievers() bool {
 	return true
 }
 
-func (n Welcome) GenenrateMessage() string {
-	return n.text_handler().GenerateMessage(n.event_id, n.Receivers())
+func (n Welcome) GenenrateMessage(receiver int) string {
+	return n.text_handler().GenerateMessage(n.event_id, receiver)
 }
 
 func (n Welcome) Receivers() []int {
