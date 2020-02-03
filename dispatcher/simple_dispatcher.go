@@ -20,13 +20,14 @@ import (
 
 const url = "amqp://guest:guest@rabbitmq"
 const queue_name = "processed_notifications"
+const max_priority = 10
 
 type SimpleDispatcher struct{}
 
 func (s SimpleDispatcher) Dispatch(notification *Notification) {
 	// this where we should adjust the priorities, based on some algorithm
 	// but now I will just make it random number
-	notification.Priority = rand.Intn(10)
+	notification.Priority = uint8(rand.Intn(10))
 	insert_to_sender(notification)
 
 }
@@ -36,7 +37,7 @@ func insert_to_sender(notification *Notification) {
 	defer conn.Close()
 	defer ch.Close()
 
-	dataQueue := queue_manager.GetQueue(queue_name, ch)
+	dataQueue := queue_manager.GetPQueue(queue_name, max_priority, ch)
 	fmt.Println("despatcherrrrrrrrrrrrrrr")
 	fmt.Println(notification.Priority)
 	fmt.Println("despatcherrrrrrrrrrrrrrr")
@@ -45,6 +46,7 @@ func insert_to_sender(notification *Notification) {
 
 	msg := amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
+		Priority:     notification.Priority,
 		Body:         data,
 	}
 

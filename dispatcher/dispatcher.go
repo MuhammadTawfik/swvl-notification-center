@@ -10,7 +10,7 @@ type Notification struct {
 	UserID     string
 	CreatedAt  int64
 	SendBefore time.Duration
-	Priority   int
+	Priority   uint8
 	Counter    int
 }
 

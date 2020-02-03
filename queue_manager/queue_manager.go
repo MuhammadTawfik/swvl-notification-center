@@ -35,3 +35,20 @@ func failOnError(err error, msg string) {
 		panic(fmt.Sprintf("%s: %s", msg, err))
 	}
 }
+
+func GetPQueue(name string, max_priority int, ch *amqp.Channel) *amqp.Queue {
+	args := amqp.Table{
+		"x-max-priority": max_priority,
+	}
+	q, err := ch.QueueDeclare(
+		name,  //name string,
+		true,  //durable bool,
+		false, //autoDelete bool,
+		false, //exclusive bool,
+		false, //noWait bool,
+		args)  //args amqp.Table)
+
+	failOnError(err, "Failed to declare queue")
+
+	return &q
+}
