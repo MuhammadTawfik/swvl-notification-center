@@ -3,22 +3,23 @@ package front_line_consumers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/MuhammadTawfik/notifications/dispatcher"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
 	"log"
-	"time"
 )
 
 const url = "amqp://guest:guest@rabbitmq"
 const queue_name = "notification_requests"
 
-type Notification struct {
-	Typ        string
-	Body       string
-	UserID     string
-	CreatedAt  int64
-	SendBefore time.Duration
-	Counter    int
-}
+// type Notification struct {
+// 	Typ        string
+// 	Body       string
+// 	UserID     string
+// 	CreatedAt  int64
+// 	SendBefore time.Duration
+// 	Counter    int
+// 	Priority   int
+// }
 
 func StartOne(consumer_id int) {
 	fmt.Println("started started")
@@ -49,12 +50,14 @@ func StartOne(consumer_id int) {
 
 	func() {
 		for d := range msgs {
-			var notf Notification
+			var notf dispatcher.Notification
 			json.Unmarshal([]byte(d.Body), &notf)
 			log.Printf("notf.Counter")
 			log.Printf("%d", consumer_id)
 			fmt.Println(consumer_id)
 			fmt.Println(notf.Counter)
+			fmt.Println(notf.Priority)
+			dispatcher.GetDispatcher().Dispatch(&notf)
 			fmt.Println("************************************************************")
 			// dot_count := bytes.Count(d.Body, []byte("."))
 			// t := time.Duration(dot_count)
