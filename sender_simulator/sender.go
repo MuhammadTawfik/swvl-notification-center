@@ -27,6 +27,7 @@ type Notification struct {
 	UserID     string
 	CreatedAt  int64
 	SendBefore time.Duration
+	Counter    int
 }
 
 func Send() {
@@ -36,20 +37,23 @@ func Send() {
 
 	dataQueue := queue_manager.GetQueue(queue_name, ch)
 	ticker := time.Tick(500 * time.Millisecond)
-
+	var i = 0
 	for range ticker {
+		i++
 		notfiction := &Notification{
 			Typ:        notification_types[rand.Intn(2)],
 			Body:       RandStringBytes(rand.Intn(100)),
 			UserID:     strconv.Itoa(rand.Intn(1000000000000)),
 			CreatedAt:  time.Now().Unix(),
 			SendBefore: 5 * time.Millisecond,
+			Counter:    i,
 		}
 
 		data, _ := json.Marshal(notfiction)
 
 		msg := amqp.Publishing{
-			Body: data,
+			DeliveryMode: amqp.Persistent,
+			Body:         data,
 		}
 
 		ch.Publish(

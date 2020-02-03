@@ -18,7 +18,7 @@ func GetChannel(url string) (*amqp.Connection, *amqp.Channel) {
 func GetQueue(name string, ch *amqp.Channel) *amqp.Queue {
 	q, err := ch.QueueDeclare(
 		name,  //name string,
-		false, //durable bool,
+		true,  //durable bool,
 		false, //autoDelete bool,
 		false, //exclusive bool,
 		false, //noWait bool,
