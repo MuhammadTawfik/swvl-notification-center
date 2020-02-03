@@ -22,9 +22,11 @@ const queue_name = "notification_requests"
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 type Notification struct {
-	Typ    string
-	Body   string
-	UserID string
+	Typ        string
+	Body       string
+	UserID     string
+	CreatedAt  int64
+	SendBefore time.Duration
 }
 
 func Send() {
@@ -37,9 +39,11 @@ func Send() {
 
 	for range ticker {
 		notfiction := &Notification{
-			Typ:    notification_types[rand.Intn(2)],
-			Body:   RandStringBytes(rand.Intn(100)),
-			UserID: strconv.Itoa(rand.Intn(1000000000000)),
+			Typ:        notification_types[rand.Intn(2)],
+			Body:       RandStringBytes(rand.Intn(100)),
+			UserID:     strconv.Itoa(rand.Intn(1000000000000)),
+			CreatedAt:  time.Now().Unix(),
+			SendBefore: 5 * time.Millisecond,
 		}
 
 		data, _ := json.Marshal(notfiction)
