@@ -14,7 +14,10 @@ func main() {
     go sender_simulator.Send()
     go front_line_consumers.StartOne(1111)
     go front_line_consumers.StartOne(2222)
-    third_party_communicators.StartOne(33333)
+    sms_comm := third_party_communicators.GetCommunicator("sms")
+    go sms_comm.StartOne(3333)
+    pn_comm := third_party_communicators.GetCommunicator("push_notification")
+    go pn_comm.StartOne(4444)
     var a string
     fmt.Scanln(&a)
 }

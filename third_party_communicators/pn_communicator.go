@@ -9,9 +9,7 @@ import (
 	"log"
 )
 
-const url = "amqp://guest:guest@rabbitmq"
-const queue_name = "processed_notifications"
-const max_priority = 10
+type PnCommunicator struct{}
 
 // type Notification struct {
 // 	Typ        string
@@ -23,13 +21,13 @@ const max_priority = 10
 // 	Priority   int
 // }
 
-func StartOne(consumer_id int) {
+func (s PnCommunicator) StartOne(consumer_id int) {
 
 	conn, ch := queue_manager.GetChannel(url)
 	defer conn.Close()
 	defer ch.Close()
 
-	dataQueue := queue_manager.GetPQueue(queue_name, max_priority, ch)
+	dataQueue := queue_manager.GetPQueue(pn_queue_name, max_priority, ch)
 
 	msgs, err := ch.Consume(
 		dataQueue.Name, // queue
@@ -67,11 +65,4 @@ func StartOne(consumer_id int) {
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 
-}
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-		panic(fmt.Sprintf("%s: %s", msg, err))
-	}
 }

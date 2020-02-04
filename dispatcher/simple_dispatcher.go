@@ -19,7 +19,8 @@ import (
 // }
 
 const url = "amqp://guest:guest@rabbitmq"
-const queue_name = "processed_notifications"
+const sms_queue_name = "sms_processed_notifications"
+const pn_queue_name = "pn_processed_notifications"
 const max_priority = 10
 
 type SimpleDispatcher struct{}
@@ -37,7 +38,8 @@ func insert_to_sender(notification *Notification) {
 	defer conn.Close()
 	defer ch.Close()
 
-	dataQueue := queue_manager.GetPQueue(queue_name, max_priority, ch)
+	smsDataQueue := queue_manager.GetPQueue(sms_queue_name, max_priority, ch)
+	pnDataQueue := queue_manager.GetPQueue(pn_queue_name, max_priority, ch)
 	fmt.Println("despatcherrrrrrrrrrrrrrr")
 	fmt.Println(notification.Priority)
 	fmt.Println("despatcherrrrrrrrrrrrrrr")
@@ -50,12 +52,21 @@ func insert_to_sender(notification *Notification) {
 		Body:         data,
 	}
 
-	ch.Publish(
-		"",             //exchange string,
-		dataQueue.Name, //key string,
-		false,          //mandatory bool,
-		false,          //immediate bool,
-		msg)            //msg amqp.Publishing)
+	if notification.Typ == "sms" {
+		ch.Publish(
+			"",                //exchange string,
+			smsDataQueue.Name, //key string,
+			false,             //mandatory bool,
+			false,             //immediate bool,
+			msg)               //msg amqp.Publishing)
+	} else {
+		ch.Publish(
+			"",               //exchange string,
+			pnDataQueue.Name, //key string,
+			false,            //mandatory bool,
+			false,            //immediate bool,
+			msg)              //msg amqp.Publishing)
+	}
 
 	fmt.Println("Reading sent. Value: %v\n", msg)
 }
