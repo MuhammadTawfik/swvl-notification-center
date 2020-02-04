@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
-	"github.com/streadway/amqp"
 	"math/rand"
 )
 
@@ -46,27 +45,11 @@ func insert_to_sender(notification *Notification) {
 
 	data, _ := json.Marshal(notification)
 
-	msg := amqp.Publishing{
-		DeliveryMode: amqp.Persistent,
-		Priority:     notification.Priority,
-		Body:         data,
-	}
-
 	if notification.Typ == "sms" {
-		ch.Publish(
-			"",                //exchange string,
-			smsDataQueue.Name, //key string,
-			false,             //mandatory bool,
-			false,             //immediate bool,
-			msg)               //msg amqp.Publishing)
+		queue_manager.Publish(ch, smsDataQueue.Name, data, notification.Priority)
+
 	} else {
-		ch.Publish(
-			"",               //exchange string,
-			pnDataQueue.Name, //key string,
-			false,            //mandatory bool,
-			false,            //immediate bool,
-			msg)              //msg amqp.Publishing)
+		queue_manager.Publish(ch, pnDataQueue.Name, data, notification.Priority)
 	}
 
-	fmt.Println("Reading sent. Value: %v\n", msg)
 }

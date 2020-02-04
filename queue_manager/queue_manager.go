@@ -52,3 +52,19 @@ func GetPQueue(name string, max_priority int, ch *amqp.Channel) *amqp.Queue {
 
 	return &q
 }
+
+func Publish(ch *amqp.Channel, qu_name string, data []byte, priority uint8) {
+	msg := amqp.Publishing{
+		DeliveryMode: amqp.Persistent,
+		Priority:     priority,
+		Body:         data,
+	}
+
+	ch.Publish(
+		"",      //exchange string,
+		qu_name, //key string,
+		false,   //mandatory bool,
+		false,   //immediate bool,
+		msg)     //msg amqp.Publishing)
+
+}

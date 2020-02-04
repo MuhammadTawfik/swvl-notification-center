@@ -3,8 +3,8 @@ package sender_simulator
 import (
 	"encoding/json"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
-	"github.com/streadway/amqp"
-	"log"
+	// "github.com/streadway/amqp"
+	// "log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -50,20 +50,20 @@ func Send() {
 		}
 
 		data, _ := json.Marshal(notfiction)
+		queue_manager.Publish(ch, dataQueue.Name, data, 0)
+		// msg := amqp.Publishing{
+		// 	DeliveryMode: amqp.Persistent,
+		// 	Body:         data,
+		// }
 
-		msg := amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
-			Body:         data,
-		}
+		// ch.Publish(
+		// 	"",             //exchange string,
+		// 	dataQueue.Name, //key string,
+		// 	false,          //mandatory bool,
+		// 	false,          //immediate bool,
+		// 	msg)            //msg amqp.Publishing)
 
-		ch.Publish(
-			"",             //exchange string,
-			dataQueue.Name, //key string,
-			false,          //mandatory bool,
-			false,          //immediate bool,
-			msg)            //msg amqp.Publishing)
-
-		log.Printf("Reading sent. Value: %v\n", msg)
+		// log.Printf("Reading sent. Value: %v\n", msg)
 	}
 
 }
