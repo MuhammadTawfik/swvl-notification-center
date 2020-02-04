@@ -17,7 +17,7 @@ func main() {
     sms_comm := third_party_communicators.GetCommunicator("sms")
     go sms_comm.StartOne(3333)
     pn_comm := third_party_communicators.GetCommunicator("push_notification")
-    go pn_comm.StartOne(4444)
+    pn_comm.StartOne(4444)
     var a string
     fmt.Scanln(&a)
 }

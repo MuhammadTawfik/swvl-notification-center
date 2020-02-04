@@ -7,6 +7,7 @@ import (
 	"github.com/MuhammadTawfik/notifications/queue_manager"
 	"github.com/MuhammadTawfik/notifications/third_party_integrations"
 	"log"
+	"time"
 )
 
 type PnCommunicator struct{}
@@ -52,7 +53,8 @@ func (s PnCommunicator) StartOne(consumer_id int) {
 			fmt.Println(consumer_id)
 			fmt.Println(notf.Counter)
 			fmt.Println(notf.Priority)
-			third_party_integrations.GetService(notf.Typ).Send(notf.UserID, notf.Body)
+			notification_tokens := get_user_notification_tokens(notf.UserID)
+			third_party_integrations.FirebaseService{}.BulkSend(notification_tokens, notf.Body)
 			log.Printf("communicatorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 			fmt.Println("************************************************************")
 			// dot_count := bytes.Count(d.Body, []byte("."))
@@ -65,4 +67,10 @@ func (s PnCommunicator) StartOne(consumer_id int) {
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 
+}
+
+func get_user_notification_tokens(user_id string) []string {
+	// this is simulation for accessing the database and getting his number
+	time.Sleep(700 * time.Millisecond)
+	return []string{user_id}
 }

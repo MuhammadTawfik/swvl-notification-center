@@ -36,7 +36,7 @@ func Send() {
 	defer ch.Close()
 
 	dataQueue := queue_manager.GetQueue(queue_name, ch)
-	ticker := time.Tick(500 * time.Millisecond)
+	ticker := time.Tick(50 * time.Millisecond)
 	var i = 0
 	for range ticker {
 		i++
