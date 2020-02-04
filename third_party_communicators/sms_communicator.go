@@ -5,6 +5,7 @@ import (
 	"github.com/MuhammadTawfik/notifications/dispatcher"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
 	"github.com/MuhammadTawfik/notifications/third_party_integrations"
+	"github.com/streadway/amqp"
 	"log"
 )
 
@@ -20,22 +21,16 @@ type SmsCommunicator struct{}
 // 	Priority   int
 // }
 
-func (s SmsCommunicator) StartOne(consumer_id int) {
-
-	conn, ch := queue_manager.GetChannel(url)
-	defer conn.Close()
-	defer ch.Close()
-
-	dataQueue := queue_manager.GetPQueue(sms_queue_name, max_priority, ch)
+func (s SmsCommunicator) startOne(consumer_id int, ch *amqp.Channel, queue_name string) {
 
 	msgs, err := ch.Consume(
-		dataQueue.Name, // queue
-		"",             // consumer
-		true,           // auto-ack
-		false,          // exclusive
-		false,          // no-local
-		false,          // no-wait
-		nil,            // args
+		queue_name, // queue
+		"",         // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
 	)
 	failOnError(err, "Failed to register a consumer")
 
@@ -45,23 +40,22 @@ func (s SmsCommunicator) StartOne(consumer_id int) {
 		for d := range msgs {
 			var notf dispatcher.Notification
 			json.Unmarshal([]byte(d.Body), &notf)
-			// log.Printf("communicatorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-			// log.Printf("notf.Counter")
-			// log.Printf("%d", consumer_id)
-			// fmt.Println(consumer_id)
-			// fmt.Println(notf.Counter)
-			// fmt.Println(notf.Priority)
 			third_party_integrations.SmsService{}.Send(notf.UserID, notf.Body)
-			// log.Printf("communicatorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-			// fmt.Println("************************************************************")
-			// dot_count := bytes.Count(d.Body, []byte("."))
-			// t := time.Duration(dot_count)
-			// time.Sleep(t * time.Second)
-			// log.Printf("Done")
 		}
 	}()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 
+}
+
+func (s SmsCommunicator) StartMany(count int, server_url string, max_priority int, queue_name string) {
+	for i := 1; i <= count; i++ {
+		_, ch := queue_manager.GetChannel(server_url)
+		dataQueue := queue_manager.GetPQueue(queue_name, max_priority, ch)
+		go s.startOne(i, ch, dataQueue.Name)
+	}
+
+	// defer conn.Close()
+	// defer ch.Close()
 }

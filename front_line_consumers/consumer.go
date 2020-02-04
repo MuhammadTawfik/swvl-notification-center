@@ -5,44 +5,20 @@ import (
 	"fmt"
 	"github.com/MuhammadTawfik/notifications/dispatcher"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
+	"github.com/streadway/amqp"
 	"log"
 )
 
-const url = "amqp://guest:guest@rabbitmq"
-const queue_name = "notification_requests"
-
-// type Notification struct {
-// 	Typ        string
-// 	Body       string
-// 	UserID     string
-// 	CreatedAt  int64
-// 	SendBefore time.Duration
-// 	Counter    int
-// 	Priority   int
-// }
-
-func StartOne(consumer_id int) {
-	fmt.Println("started started")
-	fmt.Println("started started")
-	fmt.Println("started started")
-	fmt.Println("started started")
-	fmt.Println("started started")
-	fmt.Println("started started")
-
-	conn, ch := queue_manager.GetChannel(url)
-	defer conn.Close()
-	defer ch.Close()
-
-	dataQueue := queue_manager.GetQueue(queue_name, ch)
+func startOne(consumer_id int, ch *amqp.Channel, queue_name string) {
 
 	msgs, err := ch.Consume(
-		dataQueue.Name, // queue
-		"",             // consumer
-		true,           // auto-ack
-		false,          // exclusive
-		false,          // no-local
-		false,          // no-wait
-		nil,            // args
+		queue_name, // queue
+		"",         // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
 	)
 	failOnError(err, "Failed to register a consumer")
 
@@ -52,17 +28,7 @@ func StartOne(consumer_id int) {
 		for d := range msgs {
 			var notf dispatcher.Notification
 			json.Unmarshal([]byte(d.Body), &notf)
-			log.Printf("notf.Counter")
-			log.Printf("%d", consumer_id)
-			fmt.Println(consumer_id)
-			fmt.Println(notf.Counter)
-			fmt.Println(notf.Priority)
 			dispatcher.GetDispatcher().Dispatch(&notf)
-			fmt.Println("************************************************************")
-			// dot_count := bytes.Count(d.Body, []byte("."))
-			// t := time.Duration(dot_count)
-			// time.Sleep(t * time.Second)
-			// log.Printf("Done")
 		}
 	}()
 
@@ -76,4 +42,16 @@ func failOnError(err error, msg string) {
 		log.Fatalf("%s: %s", msg, err)
 		panic(fmt.Sprintf("%s: %s", msg, err))
 	}
+}
+
+func StartMany(count int, server_url string, queue_name string) {
+
+	for i := 1; i <= count; i++ {
+		_, ch := queue_manager.GetChannel(server_url)
+		dataQueue := queue_manager.GetQueue(queue_name, ch)
+		go startOne(i, ch, dataQueue.Name)
+	}
+
+	// defer conn.Close()
+	// defer ch.Close()
 }

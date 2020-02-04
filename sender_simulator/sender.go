@@ -3,8 +3,7 @@ package sender_simulator
 import (
 	"encoding/json"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
-	// "github.com/streadway/amqp"
-	// "log"
+	"github.com/streadway/amqp"
 	"math/rand"
 	"strconv"
 	"time"
@@ -17,8 +16,6 @@ var notification_types = map[int]string{
 	1: "push notification",
 }
 
-const url = "amqp://guest:guest@rabbitmq"
-const queue_name = "notification_requests"
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 type Notification struct {
@@ -30,12 +27,8 @@ type Notification struct {
 	Counter    int
 }
 
-func Send() {
-	conn, ch := queue_manager.GetChannel(url)
-	defer conn.Close()
-	defer ch.Close()
+func startOne(sender_id int, ch *amqp.Channel, queue_name string) {
 
-	dataQueue := queue_manager.GetQueue(queue_name, ch)
 	ticker := time.Tick(50 * time.Millisecond)
 	var i = 0
 	for range ticker {
@@ -50,20 +43,7 @@ func Send() {
 		}
 
 		data, _ := json.Marshal(notfiction)
-		queue_manager.Publish(ch, dataQueue.Name, data, 0)
-		// msg := amqp.Publishing{
-		// 	DeliveryMode: amqp.Persistent,
-		// 	Body:         data,
-		// }
-
-		// ch.Publish(
-		// 	"",             //exchange string,
-		// 	dataQueue.Name, //key string,
-		// 	false,          //mandatory bool,
-		// 	false,          //immediate bool,
-		// 	msg)            //msg amqp.Publishing)
-
-		// log.Printf("Reading sent. Value: %v\n", msg)
+		queue_manager.Publish(ch, queue_name, data, 0)
 	}
 
 }
@@ -74,4 +54,17 @@ func RandStringBytes(n int) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func StartMany(count int, server_url string, queue_name string) {
+
+	for i := 1; i <= count; i++ {
+		_, ch := queue_manager.GetChannel(server_url)
+		dataQueue := queue_manager.GetQueue(queue_name, ch)
+		startOne(i, ch, dataQueue.Name)
+	}
+	startOne(0, ch, dataQueue.Name) // for some purpose, should be removed after adjusting the docker image
+
+	// defer conn.Close()
+	// defer ch.Close()
 }

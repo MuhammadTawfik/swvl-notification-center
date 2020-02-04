@@ -5,13 +5,8 @@ import (
 	"log"
 )
 
-const url = "amqp://guest:guest@rabbitmq"
-const max_priority = 10
-const sms_queue_name = "sms_processed_notifications"
-const pn_queue_name = "pn_processed_notifications"
-
 type Communicator interface {
-	StartOne(consumer_id int)
+	StartMany(count int, server_url string, max_priority int, queue_name string)
 }
 
 func GetCommunicator(service_type string) Communicator {
