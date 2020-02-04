@@ -61,10 +61,14 @@ func StartMany(count int, server_url string, queue_name string) {
 	for i := 1; i <= count; i++ {
 		_, ch := queue_manager.GetChannel(server_url)
 		dataQueue := queue_manager.GetQueue(queue_name, ch)
-		startOne(i, ch, dataQueue.Name)
+		go startOne(i, ch, dataQueue.Name)
 	}
-	startOne(0, ch, dataQueue.Name) // for some purpose, should be removed after adjusting the docker image
 
+	// the following lines are for some purpose, should be removed after adjusting the docker image
+
+	_, ch := queue_manager.GetChannel(server_url)
+	dataQueue := queue_manager.GetQueue(queue_name, ch)
+	startOne(0, ch, dataQueue.Name)
 	// defer conn.Close()
 	// defer ch.Close()
 }

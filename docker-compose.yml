@@ -3,6 +3,16 @@ services:
   notification-cneter:
     build: .
     restart: on-failure
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq
+      - NOTIFICATION_REQUEST_QUEUE_NAME=notification_requests
+      - SMS_QUEUE_NAME=sms_processed_notifications
+      - PN_QUEUE_NAME=pn_processed_notifications
+      - QUEUES_MAX_PRIORITY=10
+      - NUMBER_OF_FRONT_LINE_CONSUMERS=2
+      - NUMBER_OF_SMS_COMMUNICATORS=2
+      - NUMBER_OF_PN_COMMUNICATORS=2
+      - NUMBER_OF_SENDER_SIMULATOR=2
     depends_on:
       # - 'mongo'
       - 'rabbitmq'
