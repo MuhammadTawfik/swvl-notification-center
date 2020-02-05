@@ -3,13 +3,15 @@ package dispatcher
 import (
 	"encoding/json"
 	"github.com/MuhammadTawfik/notifications/queue_manager"
+	"os"
+	"strconv"
 	"time"
 )
 
-const url = "amqp://guest:guest@rabbitmq"
-const sms_queue_name = "sms_processed_notifications"
-const pn_queue_name = "pn_processed_notifications"
-const max_priority = 10
+var url = os.Getenv("RABBITMQ_URL")
+var sms_queue_name = os.Getenv("SMS_QUEUE_NAME")
+var pn_queue_name = os.Getenv("PN_QUEUE_NAME")
+var max_priority, _ = strconv.Atoi(os.Getenv("QUEUES_MAX_PRIORITY"))
 
 type Notification struct {
 	Typ        string
