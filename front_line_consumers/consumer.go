@@ -28,7 +28,7 @@ func startOne(consumer_id int, ch *amqp.Channel, queue_name string) {
 		for d := range msgs {
 			var notf dispatcher.Notification
 			json.Unmarshal([]byte(d.Body), &notf)
-			dispatcher.GetDispatcher().Dispatch(&notf)
+			dispatcher.GetDispatcher(notf.Typ).Dispatch(&notf)
 		}
 	}()
 
